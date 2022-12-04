@@ -1,0 +1,38 @@
+version: '3.7'
+services:
+
+  postgres_gian-project-db:
+    image: postgres:12
+    container_name: postgres_gian-project-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=gian-project-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data_base_init.sql:/docker-entrypoint-initdb.d/data_base_init.sql
+
+  app:
+    container_name: gian-project-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    restart: on-failure
+    image: gian-project-api
+    links:
+      - postgres_gian-project-db
+    depends_on:
+      - postgres_gian-project-db
+    environment:
+      - "PORT=4200"
+      - "API_PORT=4200"
+      - "DB_HOST=postgres_gian-project-db"
+      - "DB_DRIVER=postgres"
+      - "DB_PASSWORD=admin"
+      - "DB_NAME=gian-project-db"
+      - "DB_PORT=5432"
+      - "DB_USER=postgres"
