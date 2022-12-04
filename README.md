@@ -9,6 +9,7 @@ Método: __POST__
 1. Se permiten enteros positivos y negativos
 2. Una lista vaciá se responderá con sí misma dando a entender que ya esta clasificada
 3. La longitud maxima de la lista sera de 100
+4. La forma de agregar los elementos repetidos __NO ES ALEATORIA__, su comportamiento sigue el patron de que el número repetido (de izquierda a derecha) que ya esté clasificado, debera irse agregando al final de la lista (después de los clasificados)
 #### Ejemplo REQUEST:
 ~~~json
 {

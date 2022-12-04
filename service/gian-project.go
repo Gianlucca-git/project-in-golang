@@ -13,18 +13,18 @@ type ServiceManager interface {
 
 // NewServiceManager Constructs a new ServiceManager
 func NewServiceManager(t repository.Type) ServiceManager {
-	return &serviceStruct{
+	return &ServiceStruct{
 		ReplaceManager: repository.NewReplaceManager(t),
 		Utilities:      NewUtil(),
 	}
 }
 
-type serviceStruct struct {
+type ServiceStruct struct {
 	repository.ReplaceManager
 	Utilities
 }
 
-func (sm *serviceStruct) OrderList(list *dto.ClassifiedList) (invalid error) {
+func (sm *ServiceStruct) OrderList(list *dto.ClassifiedList) (invalid error) {
 	const MaxLengthAllow = 100
 
 	if len(list.Unclassified) > MaxLengthAllow {
