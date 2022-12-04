@@ -11,6 +11,8 @@ import (
 
 // ServiceManager implement methods
 type ServiceManager interface {
+	// Constants Messages
+	Constants(key string) string
 	// OrderList responsible for the logic to sort the list
 	OrderList(request *dto.ClassifiedList) error
 	// ValidatedRequestBalance responsible for validating the request from the Balance endpoint
@@ -23,13 +25,11 @@ type ServiceManager interface {
 func NewServiceManager(t repository.Type) ServiceManager {
 	return &ServiceStruct{
 		ReplaceManager: repository.NewReplaceManager(t),
-		Utilities:      NewUtil(),
 	}
 }
 
 type ServiceStruct struct {
 	repository.ReplaceManager
-	Utilities
 }
 
 // OrderList responsible for the logic to sort the list
@@ -37,7 +37,7 @@ func (sm *ServiceStruct) OrderList(request *dto.ClassifiedList) error {
 	const MaxLengthAllow = 100
 
 	if len(request.Unclassified) > MaxLengthAllow {
-		return errors.New(InvalidLengthList)
+		return errors.New(sm.Constants("InvalidLengthList"))
 	}
 
 	request.Classified = request.Unclassified
@@ -99,12 +99,12 @@ func (sm *ServiceStruct) ValidatedRequestBalance(request *dto.BalanceRequest) er
 
 	const MaxLengthAllow = 100
 	if len(request.Months) > MaxLengthAllow || len(request.Sales) > MaxLengthAllow || len(request.Bills) > MaxLengthAllow {
-		return errors.New(InvalidLengthList)
+		return errors.New(sm.Constants("InvalidLengthList"))
 	}
 
 	// check that all lists have the same length
 	if !(len(request.Months) == len(request.Sales) && len(request.Sales) == len(request.Bills)) {
-		return errors.New(invalidLengths)
+		return errors.New(sm.Constants("InvalidLengths"))
 	}
 
 	// definition of the months that are enabled for the balance
@@ -112,13 +112,13 @@ func (sm *ServiceStruct) ValidatedRequestBalance(request *dto.BalanceRequest) er
 	for i, value := range request.Months {
 
 		if !months[strings.ToLower(value)] {
-			return errors.New(fmt.Sprintf(" %s (value = %s)", InvalidMonth, value))
+			return errors.New(fmt.Sprintf("%s (value = %s)", sm.Constants("InvalidMonth"), value))
 		}
 		if request.Sales[i] < 0 {
-			return errors.New(fmt.Sprintf(" %s (value = %d)", InvalidNumber, request.Sales[i]))
+			return errors.New(fmt.Sprintf("%s (value = %d)", sm.Constants("InvalidNumber"), request.Sales[i]))
 		}
 		if request.Bills[i] < 0 {
-			return errors.New(fmt.Sprintf(" %s (value = %d)", InvalidNumber, request.Bills[i]))
+			return errors.New(fmt.Sprintf("%s (value = %d)", sm.Constants("InvalidNumber"), request.Bills[i]))
 		}
 	}
 

@@ -10,7 +10,6 @@ import (
 func Test_serviceStruct_OrderList(t *testing.T) {
 	type fields struct {
 		ReplaceManager repository.ReplaceManager
-		Utilities      service.Utilities
 	}
 	type args struct {
 		list *dto.ClassifiedList
@@ -69,7 +68,6 @@ func Test_serviceStruct_OrderList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sm := &service.ServiceStruct{
 				ReplaceManager: tt.fields.ReplaceManager,
-				Utilities:      tt.fields.Utilities,
 			}
 			if err := sm.OrderList(tt.args.list); (err != nil) != tt.wantErr {
 				t.Errorf("OrderList() error = %v, wantErr %v", err, tt.wantErr)
