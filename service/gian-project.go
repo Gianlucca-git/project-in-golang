@@ -18,7 +18,7 @@ type ServiceManager interface {
 	// ValidatedRequestBalance responsible for validating the request from the Balance endpoint
 	ValidatedRequestBalance(request *dto.BalanceRequest) error
 	// GeneralBalance responsible for making the balance of all months in the application
-	GeneralBalance(request *dto.BalanceRequest)
+	GeneralBalance(request *dto.BalanceRequest, filter string) *dto.BalanceGeneralResponse
 }
 
 // NewServiceManager Constructs a new ServiceManager
@@ -126,6 +126,40 @@ func (sm *ServiceStruct) ValidatedRequestBalance(request *dto.BalanceRequest) er
 }
 
 // GeneralBalance responsible for making the balance of all months in the application
-func (sm *ServiceStruct) GeneralBalance(request *dto.BalanceRequest) {
+func (sm *ServiceStruct) GeneralBalance(request *dto.BalanceRequest, filter string) *dto.BalanceGeneralResponse {
 
+	months := []string{"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"}
+	var existFilter bool
+	for _, m := range months {
+		if strings.ToLower(filter) == strings.ToLower(m) {
+			existFilter = true
+		}
+	}
+
+	var balanceInMonth dto.BalanceInMonth
+	var initBalances = map[string]dto.BalanceInMonth{}
+	for index, value := range request.Months { // calculate balance by month
+
+		if existFilter && strings.ToLower(filter) != strings.ToLower(value) {
+			continue
+		}
+
+		value = strings.Title(value)
+		balanceInMonth.Months = value
+		balanceInMonth.Sales = initBalances[value].Sales + request.Sales[index]
+		balanceInMonth.Bills = initBalances[value].Bills + request.Bills[index]
+		balanceInMonth.Balance = initBalances[value].Balance + (request.Sales[index] - request.Bills[index])
+
+		initBalances[value] = balanceInMonth
+	}
+
+	// take advantage of the feature that is 12 months to sort the response
+	var response dto.BalanceGeneralResponse
+	for _, value := range months {
+		if initBalances[value] != (dto.BalanceInMonth{}) {
+			response.Balances = append(response.Balances, initBalances[value])
+		}
+	}
+
+	return &response
 }

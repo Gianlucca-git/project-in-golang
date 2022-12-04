@@ -102,7 +102,6 @@ func (hm *handlerManager) Balance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//urlVars := mux.Vars(r)
 	err = hm.ServiceManager.ValidatedRequestBalance(&request)
 	if err != nil {
 		log.Printf("[INFO] init: bad request (%s)", err.Error())
@@ -112,9 +111,10 @@ func (hm *handlerManager) Balance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	Response(struct {
-		Message string `json:"message"`
-	}{"TERMINE"}, http.StatusOK, w)
+	urlVars := mux.Vars(r)
+	response := hm.ServiceManager.GeneralBalance(&request, urlVars["filterMes"])
+
+	Response(response, http.StatusOK, w)
 }
 
 func Response(resp interface{}, statusCode int, w http.ResponseWriter) {
