@@ -1,39 +1,45 @@
 package main
 
 import (
-	r "Replace/router"
+	r "IMPORTS/router"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
-	"Replace/handler"
-	repo "Replace/repository"
-	"Replace/service"
+	"IMPORTS/handler"
+	repo "IMPORTS/repository"
+	"IMPORTS/service"
 
 	"github.com/gorilla/mux"
 )
 
-const defaultPort = ":4200"
+const defaultPort = ":5200"
 
 func main() {
-	log.Println("[INFO] init: main()")
-	fmt.Println("[INFO] ftm init: main()")
+	log.Print("[INFO] init: main()")
+	fmt.Print("[INFO] ftm init: main()")
 
 	//if err := repo.LoadSQLConnection(); err != nil {
 	//	log.Fatal(err)
 	//}
 
+	port := fmt.Sprintf(":%s", os.Getenv("API_PORT"))
+	if port == ":" {
+		port = defaultPort
+	}
+
 	router := mux.NewRouter().StrictSlash(true) // make the paths different from each other with slash /
 
 	server := &http.Server{
-		Addr:           defaultPort,      // port
+		Addr:           port,             // port
 		Handler:        router,           //
 		ReadTimeout:    10 * time.Second, // reading time
 		WriteTimeout:   10 * time.Second, // writing time
 		MaxHeaderBytes: 1 << 20,          // 1mega in bits
 	}
-	log.Println("[INFO] init: listen server... Port http://localhost:4200")
+	log.Printf("[INFO] init: listen server... Port http://localhost%s", port)
 	r.SetRoutes(router, initializedHandler())
 
 	log.Fatal(server.ListenAndServe())

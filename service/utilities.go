@@ -10,3 +10,7 @@ func NewUtil() Utilities {
 }
 
 type utilities struct{}
+
+const (
+	InvalidLengthList = "list length exceeds allowed length"
+)
