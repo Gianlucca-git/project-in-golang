@@ -4,11 +4,19 @@ import (
 	"IMPORTS/model/dto"
 	"IMPORTS/repository"
 	"errors"
+	"fmt"
+	"log"
+	"strings"
 )
 
 // ServiceManager implement methods
 type ServiceManager interface {
-	OrderList(unclassified *dto.ClassifiedList) (invalid error)
+	// OrderList responsible for the logic to sort the list
+	OrderList(request *dto.ClassifiedList) error
+	// ValidatedRequestBalance responsible for validating the request from the Balance endpoint
+	ValidatedRequestBalance(request *dto.BalanceRequest) error
+	// GeneralBalance responsible for making the balance of all months in the application
+	GeneralBalance(request *dto.BalanceRequest)
 }
 
 // NewServiceManager Constructs a new ServiceManager
@@ -24,24 +32,25 @@ type ServiceStruct struct {
 	Utilities
 }
 
-func (sm *ServiceStruct) OrderList(list *dto.ClassifiedList) (invalid error) {
+// OrderList responsible for the logic to sort the list
+func (sm *ServiceStruct) OrderList(request *dto.ClassifiedList) error {
 	const MaxLengthAllow = 100
 
-	if len(list.Unclassified) > MaxLengthAllow {
+	if len(request.Unclassified) > MaxLengthAllow {
 		return errors.New(InvalidLengthList)
 	}
 
-	list.Classified = list.Unclassified
-	if len(list.Unclassified) == 0 {
+	request.Classified = request.Unclassified
+	if len(request.Unclassified) == 0 {
 		return nil
 	}
 
 	var unclassifiedCopy []int
-	unclassifiedCopy = append(unclassifiedCopy, list.Classified...)
+	unclassifiedCopy = append(unclassifiedCopy, request.Classified...)
 
 	var duplicated []int
 	oneTimes := true
-	lenList := len(list.Classified) - 1
+	lenList := len(request.Classified) - 1
 	i := 0
 	indexCurrentMinor := 0
 	var noDuplicated []int
@@ -50,18 +59,18 @@ func (sm *ServiceStruct) OrderList(list *dto.ClassifiedList) (invalid error) {
 		// sort the values without repeating them
 		j := i + 1
 		for j <= lenList {
-			if list.Classified[j] < list.Classified[indexCurrentMinor] {
+			if request.Classified[j] < request.Classified[indexCurrentMinor] {
 				indexCurrentMinor = j
 			}
 			j++
 		}
 
 		if oneTimes {
-			noDuplicated = append(noDuplicated, list.Classified[indexCurrentMinor])
+			noDuplicated = append(noDuplicated, request.Classified[indexCurrentMinor])
 			oneTimes = false
 		} else {
-			if noDuplicated[len(noDuplicated)-1] != list.Classified[indexCurrentMinor] {
-				noDuplicated = append(noDuplicated, list.Classified[indexCurrentMinor])
+			if noDuplicated[len(noDuplicated)-1] != request.Classified[indexCurrentMinor] {
+				noDuplicated = append(noDuplicated, request.Classified[indexCurrentMinor])
 			}
 		}
 
@@ -75,16 +84,48 @@ func (sm *ServiceStruct) OrderList(list *dto.ClassifiedList) (invalid error) {
 			k--
 		}
 
-		list.Classified[indexCurrentMinor] = list.Classified[i]
+		request.Classified[indexCurrentMinor] = request.Classified[i]
 		i++
 		indexCurrentMinor = i
 	}
 
-	//log.Println("LISTA INGRESADA: ", list.Classified)
-	//log.Println("LISTA ORDENADA SIN REPETIDOS: ", noDuplicated)
-	//log.Println("LISTA DE DUPLICADOS: ", duplicated)
-	//log.Println("LISTA RESULTADO: ", append(noDuplicated, duplicated...))
-
-	list.Classified = append(noDuplicated, duplicated...)
+	request.Classified = append(noDuplicated, duplicated...)
 	return nil
+}
+
+// ValidatedRequestBalance responsible for validating the request from the Balance endpoint
+func (sm *ServiceStruct) ValidatedRequestBalance(request *dto.BalanceRequest) error {
+	log.Print("[INFO] init: ValidatedRequestBalance()")
+
+	const MaxLengthAllow = 100
+	if len(request.Months) > MaxLengthAllow || len(request.Sales) > MaxLengthAllow || len(request.Bills) > MaxLengthAllow {
+		return errors.New(InvalidLengthList)
+	}
+
+	// check that all lists have the same length
+	if !(len(request.Months) == len(request.Sales) && len(request.Sales) == len(request.Bills)) {
+		return errors.New(invalidLengths)
+	}
+
+	// definition of the months that are enabled for the balance
+	var months = map[string]bool{"enero": true, "febrero": true, "marzo": true, "abril": true, "mayo": true, "junio": true, "julio": true, "agosto": true, "septiembre": true, "octubre": true, "noviembre": true, "diciembre": true}
+	for i, value := range request.Months {
+
+		if !months[strings.ToLower(value)] {
+			return errors.New(fmt.Sprintf(" %s (value = %s)", InvalidMonth, value))
+		}
+		if request.Sales[i] < 0 {
+			return errors.New(fmt.Sprintf(" %s (value = %d)", InvalidNumber, request.Sales[i]))
+		}
+		if request.Bills[i] < 0 {
+			return errors.New(fmt.Sprintf(" %s (value = %d)", InvalidNumber, request.Bills[i]))
+		}
+	}
+
+	return nil
+}
+
+// GeneralBalance responsible for making the balance of all months in the application
+func (sm *ServiceStruct) GeneralBalance(request *dto.BalanceRequest) {
+
 }
