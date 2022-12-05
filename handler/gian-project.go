@@ -15,6 +15,7 @@ type HandlerManager interface {
 	HelloWorld(w http.ResponseWriter, r *http.Request)
 	ClassifiedList(w http.ResponseWriter, r *http.Request)
 	Balance(w http.ResponseWriter, r *http.Request)
+	GetUsers(w http.ResponseWriter, r *http.Request)
 }
 
 func NewHandlerManager(manager service.ServiceManager) HandlerManager {
@@ -113,6 +114,47 @@ func (hm *handlerManager) Balance(w http.ResponseWriter, r *http.Request) {
 
 	urlVars := mux.Vars(r)
 	response := hm.ServiceManager.GeneralBalance(&request, urlVars["filterMes"])
+
+	Response(response, http.StatusOK, w)
+}
+
+func (hm *handlerManager) GetUsers(w http.ResponseWriter, r *http.Request) {
+	log.Print("[INFO] init: Handler GetUsers()")
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			Response(err.Error(), http.StatusInternalServerError, w)
+		}
+	}()
+
+	var request dto.GetUsersRequest
+	queryParams := r.URL.Query()
+	request.Search = queryParams.Get("search")
+	request.Countries = queryParams["countries"]
+	request.IdentificationsTypes = queryParams["identifications_types"]
+	request.Departments = queryParams["departments"]
+	request.Status = queryParams.Get("status")
+	request.Cursor = queryParams.Get("cursor")
+	request.Limit = queryParams.Get("limit")
+
+	invalid, err, response := hm.ServiceManager.GetUsers(r.Context(), &request)
+	if invalid != nil {
+		log.Printf("[INFO] init: bad request (%s)", invalid.Error())
+		Response(struct {
+			Message string `json:"message"`
+		}{invalid.Error()}, http.StatusBadRequest, w)
+		return
+	}
+	if err != nil {
+		log.Printf("[ERROR] init: internal error (%s)", err.Error())
+		Response(struct {
+			Message string `json:"message"`
+		}{http.StatusText(http.StatusInternalServerError)}, http.StatusInternalServerError, w)
+		return
+	}
+	if response == nil {
+		Response(nil, http.StatusNoContent, w)
+	}
 
 	Response(response, http.StatusOK, w)
 }

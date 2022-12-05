@@ -19,11 +19,10 @@ const defaultPort = ":5200"
 
 func main() {
 	log.Print("[INFO] init: main()")
-	fmt.Print("[INFO] ftm init: main()")
 
-	//if err := repo.LoadSQLConnection(); err != nil {
-	//	log.Fatal(err)
-	//}
+	if err := repo.LoadSQLConnection(); err != nil {
+		log.Fatal(err)
+	}
 
 	port := fmt.Sprintf(":%s", os.Getenv("API_PORT"))
 	if port == ":" {

@@ -1,11 +1,15 @@
 package service
 
 import (
+	b64 "encoding/base64"
+
 	"IMPORTS/model/dto"
 	"IMPORTS/repository"
+	"context"
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 )
 
@@ -19,17 +23,19 @@ type ServiceManager interface {
 	ValidatedRequestBalance(request *dto.BalanceRequest) error
 	// GeneralBalance responsible for making the balance of all months in the application
 	GeneralBalance(request *dto.BalanceRequest, filter string) *dto.BalanceGeneralResponse
+	// GetUsers logic, validations and request to DB
+	GetUsers(ctx context.Context, request *dto.GetUsersRequest) (error, error, *dto.UsersResponse)
 }
 
 // NewServiceManager Constructs a new ServiceManager
 func NewServiceManager(t repository.Type) ServiceManager {
 	return &ServiceStruct{
-		ReplaceManager: repository.NewReplaceManager(t),
+		RepositoryManager: repository.NewRepositoryManager(t),
 	}
 }
 
 type ServiceStruct struct {
-	repository.ReplaceManager
+	repository.RepositoryManager
 }
 
 // OrderList responsible for the logic to sort the list
@@ -162,4 +168,49 @@ func (sm *ServiceStruct) GeneralBalance(request *dto.BalanceRequest, filter stri
 	}
 
 	return &response
+}
+
+// GetUsers logic, validations and request to DB
+func (sm *ServiceStruct) GetUsers(ctx context.Context, request *dto.GetUsersRequest) (error, error, *dto.UsersResponse) {
+	log.Print("[INFO] init: Service GetUsers()")
+
+	invalid := getUsersValidator(request) // pending validation SQL injection in request and special characters :c
+	if invalid != nil {
+		return invalid, nil, nil
+	}
+
+	limit, err := strconv.Atoi(request.Limit)
+	if err != nil {
+		return nil, err, nil
+	}
+	if limit <= 0 {
+		return errors.New("limit is negative"), nil, nil
+	}
+
+	request.LimitInt = limit
+
+	decode, err := b64.URLEncoding.DecodeString(request.Cursor)
+	if err != nil {
+		return nil, err, nil
+	}
+	request.Cursor = string(decode)
+
+	err, response := sm.RepositoryManager.GetEmployees(ctx, request)
+	if err != nil {
+		return nil, err, nil
+	}
+
+	return nil, nil, response
+}
+
+// getUsersValidator validate that the required fields arrive
+func getUsersValidator(request *dto.GetUsersRequest) error {
+	if request.Status != "enable" && request.Status != "disable" && request.Status != "stand-by" {
+		return errors.New("status invalid")
+	}
+	if len(request.Limit) == 0 {
+		return errors.New("limit is required")
+	}
+
+	return nil
 }
