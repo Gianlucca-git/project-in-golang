@@ -1,0 +1,219 @@
+{
+	"info": {
+		"_postman_id": "9bf6ce01-75cf-4522-91be-3838f8b3b432",
+		"name": "Finkargo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19912850"
+	},
+	"item": [
+		{
+			"name": "hello finkargo",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{dev}}/hello/finkargo",
+					"host": [
+						"{{dev}}"
+					],
+					"path": [
+						"hello",
+						"finkargo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "clasificar lista",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"sin-clasificar\": [3,5,5,6,8,3,4,4,7,7,1,1,2]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dev}}/classified",
+					"host": [
+						"{{dev}}"
+					],
+					"path": [
+						"classified"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "balance General",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"meses\": [\n        \"Enero\",\n        \"febrero\",\n        \"Enero\",\n        \"Abril\"\n    ],\n    \"ventas\": [\n        10,\n        10,\n        10,\n        10\n    ],\n    \"gastos\": [\n        1,\n        1,\n        1,\n        1\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dev}}/balance/general",
+					"host": [
+						"{{dev}}"
+					],
+					"path": [
+						"balance",
+						"general"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "balance con filtro",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"meses\": [\n        \"Enero\",\n        \"febrero\",\n        \"Enero\",\n        \"Abril\"\n    ],\n    \"ventas\": [\n        10,\n        10,\n        10,\n        10\n    ],\n    \"gastos\": [\n        1,\n        1,\n        1,\n        1\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dev}}/balance/enero",
+					"host": [
+						"{{dev}}"
+					],
+					"path": [
+						"balance",
+						"enero"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "obtener usuarios con filtros",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"meses\": [\n        \"Enero\",\n        \"febrero\",\n        \"Enero\",\n        \"Abril\"\n    ],\n    \"ventas\": [\n        10,\n        10,\n        10,\n        10\n    ],\n    \"gastos\": [\n        1,\n        1,\n        1,\n        1\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dev}}/users?limit=2&search=gian&status=enable",
+					"host": [
+						"{{dev}}"
+					],
+					"path": [
+						"users"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "2"
+						},
+						{
+							"key": "search",
+							"value": "gian"
+						},
+						{
+							"key": "countries",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "identifications_types",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "departments",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "status",
+							"value": "enable"
+						},
+						{
+							"key": "cursor",
+							"value": "KCdBdXJhJywnMDYwMzg0OGEtZTYyMy00ZTYwLWI5NjEtMzgzZmNiMDM5Y2IxJyk=",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "insertar nuevo  usuario",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"EjemploName\",\n    \"others_names\": \"Lucca\",\n    \"last_name\": \"Apellido\",\n    \"second_last_name\": \"\",\n    \"countryId\": 1,\n    \"identification_type_id\": 1,\n    \"identification_number\": \"11223344\",\n    \"departmentId\": 4\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{dev}}/users",
+					"host": [
+						"{{dev}}"
+					],
+					"path": [
+						"users"
+					],
+					"query": [
+						{
+							"key": "countries",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "identifications_types",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "departments",
+							"value": null,
+							"disabled": true
+						},
+						{
+							"key": "cursor",
+							"value": "KCdBdXJhJywnMDYwMzg0OGEtZTYyMy00ZTYwLWI5NjEtMzgzZmNiMDM5Y2IxJyk=",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
