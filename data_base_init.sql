@@ -113,7 +113,7 @@ DECLARE
     s_sql      varchar;
 
 BEGIN
-
+    raise notice ' init select_users ';
 
     /*
      select * from select_users(
@@ -232,5 +232,91 @@ EXCEPTION
         RAISE EXCEPTION
             USING ERRCODE = sqlstate
                 ,MESSAGE = 'select_users() [' || sqlstate || '] : ' || sqlerrm;
+END
+$$;
+
+
+drop function if exists insert_user(uuid, varchar, varchar, varchar, varchar, integer, integer, varchar, varchar, integer);
+
+create or replace function insert_user(
+    uuid_i uuid,
+    name_i varchar, --validate in  back
+    others_names_i varchar, --validate in  back
+    last_name_i varchar, --validate in  back
+    second_last_name_i varchar, --validate in  back
+    countries_id_i int,
+    identification_type_id_i int,
+    identification_number_i varchar,
+    email  varchar, -- part generated in back
+    department_id_i int
+)
+    returns varchar
+    language plpgsql
+as
+$$
+DECLARE
+    string varchar;
+    i_count bigint = 0;
+
+BEGIN
+    raise notice ' init insert_user ';
+
+    -- PRUEBA
+    /*
+    select * from insert_user(
+            '2014cdbe-c6c2-4a16-a70b-92c149452eb2',
+            'Ejemplo',
+            'Daniela',
+            'Aguado',
+            'Rendon',
+            1,
+            1,
+            '000101',
+            'ejeplo.daniela.123q1x23',
+            4
+    );
+    */
+
+    -----------------------------------       VALIDATE IDENTIFICATION       -----------------------------------
+    string := ' SELECT COUNT(*) FROM users WHERE identification_type_id = ' || identification_type_id_i::varchar || ' AND  identification_number = '||chr(39)|| identification_number_i ||chr(39) ;
+    --raise notice ' SUB QUERY 2 -> %', string;
+    EXECUTE string into i_count;
+
+    IF i_count != 0 then
+        RETURN 'invalid identification_number';
+    end if;
+    -----------------------------------   END  VALIDATE IDENTIFICATION       -----------------------------------
+
+    -----------------------------------      BUILD EMAIL      -----------------------------------
+    string := email || '@correo.com';
+    --raise notice ' EMAIL -> %', string;
+
+    -----------------------------------  END  BUILD EMAIL      -----------------------------------
+
+    INSERT INTO users values (
+                                     uuid_i,
+                                     name_i ,
+                                     others_names_i ,
+                                     last_name_i ,
+                                     second_last_name_i ,
+                                     countries_id_i ,
+                                     identification_type_id_i,
+                                     identification_number_i ,
+                                     string  ,
+                                     (SELECT CURRENT_DATE)::date ,
+                                     (SELECT CURRENT_TIMESTAMP)::timestamp,
+                                     department_id_i
+                                 );
+    RETURN 'finished successfully';
+
+EXCEPTION
+    WHEN unique_violation THEN
+        GET STACKED DIAGNOSTICS string = CONSTRAINT_NAME;
+        RAISE EXCEPTION '%', string;
+    WHEN others THEN
+        ROLLBACK;
+        RAISE EXCEPTION
+            USING ERRCODE = sqlstate
+                ,MESSAGE = 'insert_employees() [' || sqlstate || '] : ' || sqlerrm;
 END
 $$;

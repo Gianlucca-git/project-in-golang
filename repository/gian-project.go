@@ -2,7 +2,9 @@ package repository
 
 import (
 	b64 "encoding/base64"
+	"errors"
 	"fmt"
+	"strings"
 
 	"IMPORTS/model/dto"
 	"context"
@@ -14,6 +16,7 @@ import (
 // RepositoryManager constructs a new NewRepositoryManager
 type RepositoryManager interface {
 	GetEmployees(ctx context.Context, request *dto.GetUsersRequest) (error, *dto.UsersResponse)
+	InsertUser(ctx context.Context, user *dto.User) error
 }
 
 func NewRepositoryManager(repository Type) RepositoryManager {
@@ -89,4 +92,46 @@ func (rh *RepositoryStruct) GetEmployees(ctx context.Context, request *dto.GetUs
 	response.TotalRegisters = total
 
 	return nil, &response
+}
+
+func (rh *RepositoryStruct) InsertUser(ctx context.Context, user *dto.User) error {
+	log.Print("[INFO] init: Repository InsertUser()")
+	prepare, err := rh.DB.PrepareContext(ctx, insertEmployees)
+	if err != nil {
+		return err
+	}
+
+	rows, err := prepare.QueryContext(
+		ctx,
+		user.Id,
+		strings.ToLower(user.Name),
+		strings.ToLower(user.OthersNames),
+		strings.ToLower(user.LastName),
+		strings.ToLower(user.SecondLastName),
+		user.CountryId,
+		user.IdentificationTypeId,
+		user.IdentificationNumber,
+		user.Email,
+		user.DepartmentId,
+	)
+
+	if err != nil {
+		return err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var response string
+	if rows.Next() {
+		err = rows.Scan(&response)
+		if err != nil {
+			return err
+		}
+	}
+
+	log.Printf("[INFO] init: Repository InsertUser RESPONSE (%s)", response)
+	if response == "finished successfully" {
+		return nil
+	}
+
+	return errors.New(response)
 }

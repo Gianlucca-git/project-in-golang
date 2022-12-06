@@ -1,3 +1,15 @@
+#### Notas: 
++ se desarrolla con la premisa de no entregar información sobre posibles errores y mas bien manejarlos por logs.
++ se desarrolla test unitarios para punto 1 y 2 
++ No se desarrolla el punt 4
++ dentro del repositorio estara el Modelo entidad relacion, archivo docker para levantar un servidor y la BD, un archivo para inicializar la BD, test unitarios,
+arquitectura del proyecto y collección de postman.
++ El punto 3 del crud, solo se desarrolla el obtener usuarios e insertalos, la eliminación se planeaba como una eliminación sinbolica en
+la cual solo se desactivara el usuario... por ende se pensaba un PACTH tanto para eliminar como para actualizar la info del usuario...
+* iniciar comando... $  docker-compose up -d --build y luego comprobar los correspondientes puertos denotados en el .yml
+
+## DOCUMENTACIÓN
+
 ## Endpoint 1: classifiedList
 
 Endpoint: __/classified__ <br>
@@ -257,3 +269,34 @@ departments (lista de dareas profesionales por las cuales filtrar)
   ]
 }
 ~~~
+
+## Endpoint 4: users
+
+Endpoint: __/users__ <br>
+Método: __POST__
+
+### creación de usuarios
+### Criterios y/o Restricciones:
+* el numero de identificación no se repite en una mismo tipo de documento
+* el email del usuario es generado automaticamente y garantiza unicidad
+* el momento de la creación del usuario quedara asociado en su registro
+* el estado del usuario creado sera habilitado
++ validaciones de campos requeridos (name,last_name,country_id,identification_type_id,identification_number,department_id)
++ no se admiten caracteres especiales
+
+### ejemplo request 
+~~~json
+{
+  "name": "Ejemplo",
+  "others_names": "Lucca",
+  "last_name": "Apellido",
+  "second_last_name": "",
+  "country_id": 1,
+  "identification_type_id": 1,
+  "identification_number": "11223344",
+  "department_id": 1
+}
+~~~
+
+
+### FIN :3 

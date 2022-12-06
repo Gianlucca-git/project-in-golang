@@ -12,6 +12,8 @@ func SetRoutes(router *mux.Router, handler handler.Handler) {
 	router.HandleFunc("/classified", handler.HandlerManager.ClassifiedList).Methods("POST")
 	router.HandleFunc("/balance/{filterMes}", handler.HandlerManager.Balance).Methods("POST")
 
+	// CRUD users
 	router.HandleFunc("/users", handler.HandlerManager.GetUsers).Methods("GET")
+	router.HandleFunc("/users", handler.HandlerManager.InsertUser).Methods("POST")
 
 }

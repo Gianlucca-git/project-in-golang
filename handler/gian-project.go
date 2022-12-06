@@ -16,6 +16,7 @@ type HandlerManager interface {
 	ClassifiedList(w http.ResponseWriter, r *http.Request)
 	Balance(w http.ResponseWriter, r *http.Request)
 	GetUsers(w http.ResponseWriter, r *http.Request)
+	InsertUser(w http.ResponseWriter, r *http.Request)
 }
 
 func NewHandlerManager(manager service.ServiceManager) HandlerManager {
@@ -123,7 +124,9 @@ func (hm *handlerManager) GetUsers(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		err := r.Body.Close()
 		if err != nil {
-			Response(err.Error(), http.StatusInternalServerError, w)
+			Response(struct {
+				Message string `json:"message"`
+			}{err.Error()}, http.StatusInternalServerError, w)
 		}
 	}()
 
@@ -157,6 +160,43 @@ func (hm *handlerManager) GetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	Response(response, http.StatusOK, w)
+}
+
+func (hm *handlerManager) InsertUser(w http.ResponseWriter, r *http.Request) {
+	log.Print("[INFO] init: Handler InsertUser()")
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			Response(struct {
+				Message string `json:"message"`
+			}{err.Error()}, http.StatusInternalServerError, w)
+		}
+	}()
+
+	var user dto.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		Response(err.Error(), http.StatusBadRequest, w)
+		return
+	}
+
+	invalid, err := hm.ServiceManager.InsertUser(r.Context(), &user)
+	if invalid != nil {
+		Response(struct {
+			Message string `json:"message"`
+		}{invalid.Error()}, http.StatusBadRequest, w)
+		return
+	}
+	if err != nil {
+		Response(struct {
+			Message string `json:"message"`
+		}{err.Error()}, http.StatusInternalServerError, w)
+		return
+	}
+
+	Response(struct {
+		Message string `json:"message"`
+	}{http.StatusText(http.StatusCreated)}, http.StatusCreated, w)
 }
 
 func Response(resp interface{}, statusCode int, w http.ResponseWriter) {

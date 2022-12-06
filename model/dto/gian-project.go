@@ -38,20 +38,20 @@ type (
 	}
 	User struct {
 		Id                   string `json:"id,omitempty"`
-		Name                 string `json:"name,omitempty"`
-		OthersNames          string `json:"others_names,omitempty"`
-		LastName             string `json:"last_name,omitempty"`
-		SecondLastName       string `json:"second_last_name,omitempty"`
-		CountryId            int    `json:"country_id,omitempty"`
+		Name                 string `json:"name,omitempty" validator:"required,max=20"`
+		OthersNames          string `json:"others_names,omitempty" validator:"max=50"`
+		LastName             string `json:"last_name,omitempty" validator:"required, max=20"`
+		SecondLastName       string `json:"second_last_name,omitempty" validator:"max=20"`
+		CountryId            int    `json:"country_id,omitempty" validator:"required, numeric, min=1"`
 		Country              string `json:"country,omitempty,omitempty"`
-		IdentificationTypeId int    `json:"identification_type_id,omitempty"`
+		IdentificationTypeId int    `json:"identification_type_id,omitempty" validator:"required,numeric,min=1"`
 		IdentificationType   string `json:"identification_type,omitempty"`
-		IdentificationNumber string `json:"identification_number,omitempty"`
-		Admission            string `json:"admission,omitempty"`
+		IdentificationNumber string `json:"identification_number,omitempty" validator:"required,max=20"`
+		Admission            string `json:"admission,omitempty" validator:"required"`
 		RegistrationDate     string `json:"registration_date,omitempty"`
 		RegistrationHours    string `json:"registration_hours,omitempty"`
 		Email                string `json:"email,omitempty"`
-		DepartmentId         int    `json:"department_id,omitempty"`
+		DepartmentId         int    `json:"department_id,omitempty" validator:"required,numeric,min=1"`
 		Department           string `json:"department,omitempty"`
 		Status               string `json:"status,omitempty"`
 	}

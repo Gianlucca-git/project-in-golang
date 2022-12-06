@@ -1,13 +1,14 @@
 package service
 
 import (
-	b64 "encoding/base64"
-
 	"IMPORTS/model/dto"
 	"IMPORTS/repository"
 	"context"
+	b64 "encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/go-playground/validator/v10"
+	uuid "github.com/satori/go.uuid"
 	"log"
 	"strconv"
 	"strings"
@@ -25,6 +26,8 @@ type ServiceManager interface {
 	GeneralBalance(request *dto.BalanceRequest, filter string) *dto.BalanceGeneralResponse
 	// GetUsers logic, validations and request to DB
 	GetUsers(ctx context.Context, request *dto.GetUsersRequest) (error, error, *dto.UsersResponse)
+	// InsertUser insert a new user if no exist
+	InsertUser(ctx context.Context, user *dto.User) (error, error)
 }
 
 // NewServiceManager Constructs a new ServiceManager
@@ -205,11 +208,63 @@ func (sm *ServiceStruct) GetUsers(ctx context.Context, request *dto.GetUsersRequ
 
 // getUsersValidator validate that the required fields arrive
 func getUsersValidator(request *dto.GetUsersRequest) error {
+	log.Print("[INFO] init: Service getUsersValidator()")
+
 	if request.Status != "enable" && request.Status != "disable" && request.Status != "stand-by" {
 		return errors.New("status invalid")
 	}
 	if len(request.Limit) == 0 {
 		return errors.New("limit is required")
+	}
+
+	return nil
+}
+
+// InsertUser insert a new user if no exist
+func (sm *ServiceStruct) InsertUser(ctx context.Context, user *dto.User) (error, error) {
+	log.Print("[INFO] init: Service InsertUser()")
+
+	invalid := sm.InsertUserValidator(user)
+	if invalid != nil {
+		return invalid, nil
+	}
+
+	user.Id = uuid.NewV4().String()
+	user.Email = user.Name + "." + user.LastName + "." + strings.Split("-", user.Id)[0]
+
+	err := sm.RepositoryManager.InsertUser(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+func (sm *ServiceStruct) InsertUserValidator(user *dto.User) error {
+	log.Print("[INFO] init: Service insertUserValidator()")
+
+	var badRequest = errors.New("bad request")
+
+	v := validator.New()
+	if v.Struct(user) != nil {
+		return v.Struct(user)
+	}
+
+	if ok := sm.RegularExpression(user.Name, "alphabetic"); !ok {
+		return badRequest
+	}
+	if ok := sm.RegularExpression(user.LastName, "alphabetic"); !ok {
+		return badRequest
+	}
+	if len(user.SecondLastName) > 0 {
+		if ok := sm.RegularExpression(user.SecondLastName, "alphabetic"); !ok {
+			return badRequest
+		}
+	}
+	if len(user.OthersNames) > 0 {
+		if ok := sm.RegularExpression(user.OthersNames, "alphabetic"); !ok {
+			return badRequest
+		}
 	}
 
 	return nil
