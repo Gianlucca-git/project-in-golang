@@ -4,14 +4,12 @@ import (
 	"IMPORTS/model/dto"
 	"IMPORTS/repository"
 	"IMPORTS/service"
-	"log"
 	"testing"
 )
 
 func Test_serviceStruct_OrderList(t *testing.T) {
 	type fields struct {
 		ReplaceManager repository.ReplaceManager
-		Utilities      service.Utilities
 	}
 	type args struct {
 		list *dto.ClassifiedList
@@ -70,14 +68,10 @@ func Test_serviceStruct_OrderList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			sm := &service.ServiceStruct{
 				ReplaceManager: tt.fields.ReplaceManager,
-				Utilities:      tt.fields.Utilities,
 			}
 			if err := sm.OrderList(tt.args.list); (err != nil) != tt.wantErr {
 				t.Errorf("OrderList() error = %v, wantErr %v", err, tt.wantErr)
 			}
-
-			log.Printf("Classified = %v", tt.args.list.Classified)
-			log.Printf("wantList = %v", tt.wantList)
 			equal := func() bool {
 				for i, v := range tt.args.list.Classified {
 					if v != tt.wantList[i] {
@@ -89,7 +83,6 @@ func Test_serviceStruct_OrderList(t *testing.T) {
 			if !equal {
 				t.Errorf("List Classified = %v is not equal to  wantList %v", tt.args.list.Classified, tt.wantList)
 			}
-
 		})
 	}
 }
